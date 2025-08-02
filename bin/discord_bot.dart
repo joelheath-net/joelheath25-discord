@@ -8,12 +8,13 @@ class BotActivity {
   final ActivityType type;
   final String message;
 
-  const BotActivity(this.type, this.message);
+  // Removed 'const' from constructor for safety with final list
+  BotActivity(this.type, this.message);
 }
 
 void main() async {
-  // A list of activities for the bot to rotate through
-  const activities = [
+  // FIX 1: Changed from 'const' to 'final'. This resolves the 'playing' member not found error.
+  final activities = [
     BotActivity(ActivityType.playing, 'joelheath.net'),
     BotActivity(ActivityType.watching, 'joelheath24 videos'),
     BotActivity(ActivityType.listening, 'JRAJYM Theme'),
@@ -29,7 +30,7 @@ void main() async {
   // Connect to Discord
   final client = await Nyxx.connectGateway(
     token,
-    GatewayIntents.allUnprivileged | GatewayIntents.messageContent, // messageContent intent is required to read messages
+    GatewayIntents.allUnprivileged | GatewayIntents.messageContent,
   );
 
   print("✅ Bot is online");
@@ -37,26 +38,27 @@ void main() async {
   // Set initial activity and start rotation timer
   Timer.periodic(const Duration(seconds: 10), (timer) {
     final random = Random();
-    // Select a random activity from the list
     final activity = activities[random.nextInt(activities.length)];
 
     client.gateway.updatePresence(PresenceBuilder(
-      activity: ActivityBuilder(
-        name: activity.message,
-        type: activity.type,
-        // Streaming status requires a URL to be shown correctly
-        url: activity.type == ActivityType.streaming ? 'https://www.youtube.com/joelheath24' : null,
-      ),
+      // FIX 2: Changed 'activity' to 'activities' and wrapped the ActivityBuilder in a list.
+      activities: [
+        ActivityBuilder(
+          name: activity.message,
+          type: activity.type,
+          url: activity.type == ActivityType.streaming ? 'https://www.youtube.com/@joelheath24' : null,
+        ),
+      ],
       status: CurrentUserStatus.online,
+      // FIX 3: Added the new required parameter 'isAfk'.
+      isAfk: false,
     ));
   });
-
 
   // Listen for new messages
   client.onMessageCreate.listen((event) async {
     final content = event.message.content.trim();
 
-    // Helper function to easily reply to messages
     Future<void> reply(String messageContent) async {
       await event.message.channel.sendMessage(MessageBuilder(
         content: messageContent,
@@ -64,13 +66,13 @@ void main() async {
       ));
     }
 
-    // Command handling
     if (content == 'ping') {
       await reply('pong!');
     } else if (content == '/commands') {
-      await reply('"Who is joelheath25?", "Who is joelheath24?", "Who is joelheath23?", "Who is Herobrine?"');
+      await reply('"Who is joelheath25? Who is joelheath24? Who is joelheath24? Who is Herobrine?"');
+      await reply('The amazing and incredible personal assistant of joelheath24! Try asking: Who is Herobrine?');
     } else if (content == 'Who is joelheath25?') {
-      await reply('The amazing and incredible personal assistant of joelheath24! Try asking "Who is Herobrine?"');
+      await reply('The amazing and incredible personal assistant of joelheath24! Try asking: Who is Herobrine?');
     } else if (content == 'Who is joelheath24?') {
       await reply('The best content creator out there!');
     } else if (content == 'Who is joelheath23?') {
@@ -78,10 +80,9 @@ void main() async {
     } else if (content == 'Who is Herobrine?') {
       await reply('Little is known on the origins of Herobrine but currently he seems to be working alongside joelheath23.');
     } else if (content == 'Who is joelinaheath24?') {
-      await reply("joelinaheath24 featured as joelheath24's girlfriend in his 20 subscriber special, though she has yet to make another appearance in joelheath24's videos. Little is known on their current relationship status, however it is known that the two are not married, joelinaheath24 *got hasty* with changing her surname.");
+      await reply("As late as 23 Oct 2020 joelinaheath24 has been joelheath24's girlfriend, though she is yet to make another appearance in joelheath24's videos, so little is known on their current relationship status. However what is known is that the two are not married, and joelinaheath24 'got hasty' with changing her surname.");
     }
   });
-
 
   // Fake Web Server to Keep a hosting service like Render alive
   var port = int.tryParse(Platform.environment['PORT'] ?? '8080') ?? 8080;
