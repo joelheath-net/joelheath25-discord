@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:async'; // Still needed for the web server
+import 'dart:async';
 import 'package:nyxx/nyxx.dart';
 
 void main() async {
@@ -17,14 +17,32 @@ void main() async {
 
   print("✅ Bot is online and ready for commands.");
 
+  // Activities to cycle through
+  final activities = [
+    ActivityBuilder.watching('joelheath24 videos'),
+    ActivityBuilder.listening('JRAJYM theme'),
+    ActivityBuilder.playing('joelheath.net'),
+  ];
+  int currentActivity = 0;
+
+  // Set the initial activity
+  client.updatePresence(PresenceBuilder(
+    status: PresenceStatus.online,
+    activity: activities[currentActivity],
+  ));
+
+  // Cycle through activities every 10 seconds
+  Timer.periodic(const Duration(seconds: 10), (timer) {
+    currentActivity = (currentActivity + 1) % activities.length;
+    client.updatePresence(PresenceBuilder(
+      status: PresenceStatus.online,
+      activity: activities[currentActivity],
+    ));
+  });
+
+
   // Listen for new messages
   client.onMessageCreate.listen((event) async {
-    /* this doesn't work probably hallucinated property by chatgpt
-    // Ignore messages from other bots to prevent loops
-    if (event.message.author.isBot) {
-      return;
-    } */
-
     final content = event.message.content.trim();
 
     // Helper function to easily reply to messages
@@ -35,7 +53,7 @@ void main() async {
       ));
     }
 
-    // Command handling using if/else if statements
+    // Command handling
     if (content == 'ping') {
       await reply('pong!');
     } else if (content == '/commands') {
