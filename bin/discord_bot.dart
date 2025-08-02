@@ -19,30 +19,34 @@ void main() async {
 
   // Activities to cycle through
   final activities = [
-    ActivityBuilder.watching('joelheath24 videos'),
-    ActivityBuilder.listening('JRAJYM theme'),
-    ActivityBuilder.playing('joelheath.net'),
+    ActivityBuilder(name: 'joelheath24 videos', type: ActivityType.watching),
+    ActivityBuilder(name: 'JRAJYM theme', type: ActivityType.listening),
+    ActivityBuilder(name: 'joelheath.net', type: ActivityType.playing),
   ];
   int currentActivity = 0;
 
+  // Function to update presence
+  void updateActivity() {
+    client.updatePresence(PresenceBuilder(
+      status: Status.online,
+      isAfk: false,
+      activities: [activities[currentActivity]], // PresenceBuilder expects a List
+    ));
+  }
+
   // Set the initial activity
-  client.updatePresence(PresenceBuilder(
-    status: PresenceStatus.online,
-    activity: activities[currentActivity],
-  ));
+  updateActivity();
 
   // Cycle through activities every 10 seconds
   Timer.periodic(const Duration(seconds: 10), (timer) {
     currentActivity = (currentActivity + 1) % activities.length;
-    client.updatePresence(PresenceBuilder(
-      status: PresenceStatus.online,
-      activity: activities[currentActivity],
-    ));
+    updateActivity();
   });
 
 
   // Listen for new messages
   client.onMessageCreate.listen((event) async {
+
     final content = event.message.content.trim();
 
     // Helper function to easily reply to messages
