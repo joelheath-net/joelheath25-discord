@@ -1,64 +1,32 @@
 import 'dart:io';
-import 'dart:async';
-import 'dart:math';
+import 'dart:async'; // Still needed for the web server
 import 'package:nyxx/nyxx.dart';
 
-// A simple class to hold activity data
-class BotActivity {
-  final ActivityType type;
-  final String message;
-
-  // Removed 'const' from constructor for safety with final list
-  BotActivity(this.type, this.message);
-}
-
 void main() async {
-  // FIX 1: Changed from 'const' to 'final'. This resolves the 'playing' member not found error.
-  final activities = [
-    BotActivity(ActivityType.playing, 'joelheath.net'),
-    BotActivity(ActivityType.watching, 'joelheath24 videos'),
-    BotActivity(ActivityType.listening, 'JRAJYM Theme'),
-    BotActivity(ActivityType.streaming, 'joelheath24 videos'),
-  ];
-
   String token = Platform.environment['TOKEN'] ?? '';
   if (token.isEmpty) {
     print("❌ ERROR: TOKEN environment variable not set.");
     return;
   }
 
-  // Connect to Discord
+  // Connect to Discord with the required intents
   final client = await Nyxx.connectGateway(
     token,
     GatewayIntents.allUnprivileged | GatewayIntents.messageContent,
   );
 
-  print("✅ Bot is online");
-
-  // Set initial activity and start rotation timer
-  Timer.periodic(const Duration(seconds: 10), (timer) {
-    final random = Random();
-    final activity = activities[random.nextInt(activities.length)];
-
-    client.gateway.updatePresence(PresenceBuilder(
-      // FIX 2: Changed 'activity' to 'activities' and wrapped the ActivityBuilder in a list.
-      activities: [
-        ActivityBuilder(
-          name: activity.message,
-          type: activity.type,
-          url: activity.type == ActivityType.streaming ? 'https://www.youtube.com/@joelheath24' : null,
-        ),
-      ],
-      status: CurrentUserStatus.online,
-      // FIX 3: Added the new required parameter 'isAfk'.
-      isAfk: false,
-    ));
-  });
+  print("✅ Bot is online and ready for commands.");
 
   // Listen for new messages
   client.onMessageCreate.listen((event) async {
+    // Ignore messages from other bots to prevent loops
+    if (event.message.author.isBot) {
+      return;
+    }
+    
     final content = event.message.content.trim();
 
+    // Helper function to easily reply to messages
     Future<void> reply(String messageContent) async {
       await event.message.channel.sendMessage(MessageBuilder(
         content: messageContent,
@@ -66,9 +34,11 @@ void main() async {
       ));
     }
 
+    // Command handling using if/else if statements
     if (content == 'ping') {
       await reply('pong!');
     } else if (content == '/commands') {
+      // This replicates the "fall-through" behavior from your original JS code
       await reply('"Who is joelheath25? Who is joelheath24? Who is joelheath24? Who is Herobrine?"');
       await reply('The amazing and incredible personal assistant of joelheath24! Try asking: Who is Herobrine?');
     } else if (content == 'Who is joelheath25?') {
