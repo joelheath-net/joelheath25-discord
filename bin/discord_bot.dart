@@ -19,11 +19,12 @@ void main() async {
 
   // Listen for new messages
   client.onMessageCreate.listen((event) async {
+    /* this doesn't work probably hallucinated property by chatgpt
     // Ignore messages from other bots to prevent loops
     if (event.message.author.isBot) {
       return;
-    }
-    
+    } */
+
     final content = event.message.content.trim();
 
     // Helper function to easily reply to messages
@@ -38,9 +39,7 @@ void main() async {
     if (content == 'ping') {
       await reply('pong!');
     } else if (content == '/commands') {
-      // This replicates the "fall-through" behavior from your original JS code
-      await reply('"Who is joelheath25? Who is joelheath24? Who is joelheath24? Who is Herobrine?"');
-      await reply('The amazing and incredible personal assistant of joelheath24! Try asking: Who is Herobrine?');
+      await reply('Available commands:\n- ping\n- /commands\n- Who is joelheath25?\n- Who is joelheath24?\n- Who is joelheath23?\n- Who is Herobrine?\n- Who is joelinaheath24?');
     } else if (content == 'Who is joelheath25?') {
       await reply('The amazing and incredible personal assistant of joelheath24! Try asking: Who is Herobrine?');
     } else if (content == 'Who is joelheath24?') {
@@ -50,7 +49,7 @@ void main() async {
     } else if (content == 'Who is Herobrine?') {
       await reply('Little is known on the origins of Herobrine but currently he seems to be working alongside joelheath23.');
     } else if (content == 'Who is joelinaheath24?') {
-      await reply("As late as 23 Oct 2020 joelinaheath24 has been joelheath24's girlfriend, though she is yet to make another appearance in joelheath24's videos, so little is known on their current relationship status. However what is known is that the two are not married, and joelinaheath24 'got hasty' with changing her surname.");
+      await reply("joelinaheath24 featured as joelheath24's girlfriend in his 20 subscriber special, though she has yet to make another appearance in joelheath24's videos. Little is known on their current relationship status, however it is known that the two are not married, joelinaheath24 *got hasty* with changing her surname.");
     }
   });
 
